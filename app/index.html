@@ -15,8 +15,8 @@
       <input type="text" v-model="query" autofocus class="mousetrap">
 
       <div v-if="query.length === 0">
-        <div v-for="(index, item) in clipboardContent"
-            v-bind:class="{ selected: index == selectionIndex, item: true }">{{item.substring(0, 50)}}</div>
+        <div v-for="(item, index) in clipboardContent"
+            v-bind:class="{ selected: index == selectionIndex, item: true }">{{item}}</div>
         <div class="pagination">
           <div>
             <img src="./img/ic_keyboard_arrow_left_black_24px.svg"
@@ -34,8 +34,8 @@
       </div>
 
       <div v-else>
-        <div v-for="(index, item) in searchResults"
-            v-bind:class="{ selected: index == selectionIndex, item: true }">{{item.substring(0, 50)}}</div>
+        <div v-for="(item, index) in searchResults"
+            v-bind:class="{ selected: index == selectionIndex, item: true }">{{item}}</div>
         <div class="pagination">
           <div>
             <img src="./img/ic_keyboard_arrow_left_black_24px.svg"

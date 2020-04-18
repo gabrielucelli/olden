@@ -12,11 +12,10 @@ const {
   shell } = require('electron');
 
 const path = require('path');
-const fs   = require('fs');
+const fs = require('fs');
 
-let mainWindow    = null;
-let tray          = null;
-let updateOffered = false;
+let mainWindow = null;
+let tray = null;
 
 // Hide the icon from the dock if the OS has it.
 if (app.dock) {
@@ -39,7 +38,7 @@ app.on('ready', () => {
 
   // The trigger used to show/hide the app window.
   // TODO: allow user to set a custom shortcut.
-  globalShortcut.register('Alt+Space', () => {
+  globalShortcut.register('ctrl+shift+v', () => {
     if (mainWindow.isVisible()) {
       if (app.hide) {
         // NOTE: to get focus back to the previous window on MacOS we need to
@@ -56,6 +55,17 @@ app.on('ready', () => {
     }
   });
 
+  globalShortcut.register('esc', () => {
+    if (mainWindow.isVisible()) {
+      if (app.hide) {
+        app.hide();
+      } else {
+        mainWindow.blur();
+        mainWindow.hide()
+      }
+    }
+  });
+
   if (process.platform === 'darwin') {
     tray = new Tray(path.join(__dirname, 'img', 'iconTemplate.png'));
   } else if (process.platform === 'linux') {
@@ -65,21 +75,31 @@ app.on('ready', () => {
   }
 
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Export', submenu: [
-      { label: 'JSON', click(item, focusedWindow) {
-        mainWindow.webContents.send('exportClipboardHistoryAsJSON');
-      }},
-      { label: 'Plain text', click(item, focusedWindow) {
-        mainWindow.webContents.send('exportClipboardHistoryAsTXT');
-      }}
-    ]},
-    { label: 'Clear clipboard history', click(item, focusedWindow) {
-      mainWindow.webContents.send('clearClipboardHistory');
-    }},
+    {
+      label: 'Export', submenu: [
+        {
+          label: 'JSON', click(item, focusedWindow) {
+            mainWindow.webContents.send('exportClipboardHistoryAsJSON');
+          }
+        },
+        {
+          label: 'Plain text', click(item, focusedWindow) {
+            mainWindow.webContents.send('exportClipboardHistoryAsTXT');
+          }
+        }
+      ]
+    },
+    {
+      label: 'Clear clipboard history', click(item, focusedWindow) {
+        mainWindow.webContents.send('clearClipboardHistory');
+      }
+    },
     { type: 'separator' },
-    { label: 'Quit Olden', click(item, focusedWindow) {
-      app.quit();
-    }}
+    {
+      label: 'Quit Olden', click(item, focusedWindow) {
+        app.quit();
+      }
+    }
   ]);
 
   tray.setToolTip('Olden')
@@ -94,35 +114,17 @@ app.on('ready', () => {
 
   ipcMain.on('hideWindow', (event) => {
     if (app.hide) {
-        app.hide();
-      } else {
-        mainWindow.blur();
-        mainWindow.hide()
-      }
-  });
-
-  ipcMain.on('offer-update', (event, data) => {
-    if (!updateOffered) {
-      dialog.showMessageBox({
-        type:      'question',
-        buttons:   [ 'Cancel', 'Download' ],
-        defaultId: 0,
-        title:     'A newer version of Olden is available',
-        message:   'Would you like to download the update?'
-      }, (response) => {
-        if (response === 1) {
-          shell.openExternal(data.url);
-        }
-
-        updateOffered = true;
-      });
+      app.hide();
+    } else {
+      mainWindow.blur();
+      mainWindow.hide()
     }
   });
 
   ipcMain.on('saveExportedData', (event, data) => {
     dialog.showSaveDialog(null, {
-      defaultPath: process.env[ (process.platform === 'win32') ? 'USERPROFILE' : 'HOME' ],
-      filters: [{ name: 'JSON', extensions: [ data.format ] }]
+      defaultPath: process.env[(process.platform === 'win32') ? 'USERPROFILE' : 'HOME'],
+      filters: [{ name: 'JSON', extensions: [data.format] }]
     }, (filename) => {
       if (filename) {
         fs.writeFile(filename, data.items, 'utf8', (err, data) => {
@@ -131,9 +133,9 @@ app.on('ready', () => {
             dialog.showErrorBox('Export failed', "Couldn't export clipboard history.");
           } else {
             dialog.showMessageBox(null, {
-              type:    'info',
+              type: 'info',
               buttons: [],
-              title:   'Export successful',
+              title: 'Export successful',
               message: `All clipboard history has been exported to ${filename}`
             });
           }
