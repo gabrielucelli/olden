@@ -185,41 +185,46 @@ const vm = new Vue({
          */
         searchClipboard(needle) {
 
-            async function find(prefixes) {
+            console.time('someFunction')
 
-                console.log(prefixes)
+            function slugify (str) {
+                var map = {
+                    '-' : ' ',
+                    '-' : '_',
+                    'a' : 'á|à|ã|â|À|Á|Ã|Â',
+                    'e' : 'é|è|ê|É|È|Ê',
+                    'i' : 'í|ì|î|Í|Ì|Î',
+                    'o' : 'ó|ò|ô|õ|Ó|Ò|Ô|Õ',
+                    'u' : 'ú|ù|û|ü|Ú|Ù|Û|Ü',
+                    'c' : 'ç|Ç',
+                    'n' : 'ñ|Ñ'
+                };
+                
+                str = str.toLowerCase();
+                
+                for (var pattern in map) {
+                    str = str.replace(new RegExp(map[pattern], 'g'), pattern);
+                };
+            
+                return str;
+            };
 
-                // Parallell search for all prefixes - just select resulting primary keys
-                const results = await Promise.all(prefixes.map(prefix =>
-                    db.items
-                        .where('textWords')
-                        .startsWithIgnoreCase(prefix)
-                        .primaryKeys()));
-
-                // Intersect result set of primary keys
-                const reduced = await results
-                    .reduce((a, b) => {
-                        const set = new Set(b);
-                        return a.filter(k => set.has(k));
-                    });
-
-                // Finally select entire documents from intersection
-                return db.items
-                    .where('id')
-                    .anyOf(reduced)
-                    .reverse()
-                    .distinct()
-                    .offset(9 * vm.currentSearchPage)
-                    .limit(9)
-                    .sortBy('id');
+            async function find(query) {
+                return db.items.reverse().filter(function(item) {
+                    return slugify(item.text).indexOf(slugify(query)) !== -1;
+                })
+                .offset(9 * vm.currentSearchPage)
+                .limit(9)
+                .toArray();
             }
 
-            query_words = getAllWords(needle)
-
-            find(query_words)
+            find(needle)
                 .then((items) => {
+                    console.timeEnd('someFunction')
                     vm.searchItemCount = items.length;
                     vm.searchResults = items.map((item) => item.text);
+                }, (e) => {
+                    console.log(e)
                 });
 
         },
