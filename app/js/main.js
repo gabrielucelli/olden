@@ -1,13 +1,41 @@
+const _ = require('lodash');
 const { ipcRenderer, clipboard } = require('electron');
 const path = require('path');
 const Dexie = require('dexie');
-const db = new Dexie('clipboard');
+const db = new Dexie('mydb');
 const Vue = require('vue/dist/vue');
-const Mousetrap = require('mousetrap')
+const Mousetrap = require('mousetrap');
 
 db.version(1).stores({
-    items: '++id, &text'
+    items: '++id, &text, *textWords'
 });
+
+db.items.hook("creating", function (primKey, obj, trans) {
+    if (typeof obj.text == 'string') obj.textWords = getAllWords(obj.text);
+});
+
+db.items.hook("updating", function (mods, primKey, obj, trans) {
+    if (mods.hasOwnProperty("text")) {
+        // "message" property is being updated
+        if (typeof mods.text == 'string')
+            // "message" property was updated to another valid value. Re-index messageWords:
+            return { textWords: getAllWords(mods.text) };
+        else
+            // "message" property was deleted (typeof mods.message === 'undefined') or changed to an unknown type. Remove indexes:
+            return { textWords: [] };
+    }
+
+});
+
+function getAllWords(text) {
+    var allWordsIncludingDups = text.split(' ');
+    var wordSet = allWordsIncludingDups.reduce(function (prev, current) {
+        prev[current] = true;
+        return prev;
+    }, {});
+    return Object.keys(wordSet);
+}
+
 
 const vm = new Vue({
     el: '#app',
@@ -23,7 +51,17 @@ const vm = new Vue({
         currentPage: 0,
         currentSearchPage: 0
     },
-
+    watch: {
+        query: _.debounce(
+            (value) => {
+                if (value.length > 0) {
+                    vm.searchClipboard(value);
+                } else {
+                    vm.searchResults = [];
+                    vm.currentSearchPage = 0;
+                }
+            }, 100)
+    },
     methods: {
 
         /**
@@ -146,19 +184,40 @@ const vm = new Vue({
          */
         searchClipboard(needle) {
 
-            db.items.where('text').startsWithIgnoreCase(needle).count((count) => {
-                vm.searchItemCount = count;
-            });
+            async function find(prefixes) {
 
-            db.items
-                .where('text').startsWithIgnoreCase(needle)
-                .reverse()
-                .offset(9 * vm.currentSearchPage)
-                .limit(9)
-                .sortBy('id')
+                console.log(prefixes)
+
+                // Parallell search for all prefixes - just select resulting primary keys
+                const results = await Promise.all(prefixes.map(prefix =>
+                    db.items
+                        .where('textWords')
+                        .startsWithIgnoreCase(prefix)
+                        .primaryKeys()));
+
+                // Intersect result set of primary keys
+                const reduced = await results
+                    .reduce((a, b) => {
+                        const set = new Set(b);
+                        return a.filter(k => set.has(k));
+                    });
+
+                // Finally select entire documents from intersection
+                return db.items
+                    .where('id')
+                    .anyOf(reduced)
+                    .distinct()
+                    .offset(9 * vm.currentSearchPage)
+                    .limit(9)
+                    .sortBy('id');
+            }
+
+            query_words = getAllWords(needle)
+
+            find(query_words)
                 .then((items) => {
-                    vm.searchResults = [];
-                    items.forEach((item) => vm.searchResults.push(item.text));
+                    vm.searchItemCount = items.length;
+                    vm.searchResults = items.map((item) => item.text);
                 });
 
         },
@@ -285,14 +344,5 @@ const vm = new Vue({
         });
 
         this.initActionKeys();
-    }
-});
-
-vm.$watch('query', (value) => {
-    if (value.length > 0) {
-        vm.searchClipboard(value);
-    } else {
-        vm.searchResults = [];
-        vm.currentSearchPage = 0;
     }
 });
