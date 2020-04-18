@@ -4,7 +4,7 @@
   "main": "./app/main.js",
   "scripts": {
     "start": "electron . --dev",
-    "test": "./node_modules/.bin/mocha --reporter spec",
+    "test": "mocha --reporter spec",
     "package_macos": "node scripts/package_macos.js",
     "package_win": "node scripts/package_windows.js",
     "package_linux": "node scripts/package_linux.js",
@@ -14,6 +14,7 @@
   "dependencies": {
     "dexie": "^1.4.1",
     "mousetrap": "^1.6.5",
+    "robotjs": "^0.6.0",
     "vue": "^2.6.11"
   },
   "optionalDependencies": {
