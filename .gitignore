@@ -8,3 +8,4 @@ app/js/mousetrap.min.js
 app/img/app_icon.png
 .vscode
 dist/Olden-*
+dist

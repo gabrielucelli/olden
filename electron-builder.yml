@@ -1,0 +1,15 @@
+appId: com.electron.olden
+productName: olden
+copyright: gabrielucelli
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+        - ia32
+    - target: portable
+      arch:
+        - x64
+        - ia32
+directories:
+  output: dist

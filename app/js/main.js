@@ -207,6 +207,7 @@ const vm = new Vue({
                 return db.items
                     .where('id')
                     .anyOf(reduced)
+                    .reverse()
                     .distinct()
                     .offset(9 * vm.currentSearchPage)
                     .limit(9)

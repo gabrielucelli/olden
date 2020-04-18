@@ -5,6 +5,7 @@
   "scripts": {
     "start": "electron . --dev",
     "test": "mocha --reporter spec",
+    "build": "electron-builder -p never --config ./electron-builder.yml",
     "package_macos": "node scripts/package_macos.js",
     "package_win": "node scripts/package_windows.js",
     "package_linux": "node scripts/package_linux.js",
@@ -12,16 +13,19 @@
     "bootstrap": "npm i"
   },
   "dependencies": {
+    "auto-launch": "^5.0.5",
     "dexie": "^1.4.1",
     "lodash": "^4.17.15",
     "mousetrap": "^1.6.5",
-    "robotjs": "^0.6.0",
     "vue": "^2.6.11"
   },
   "optionalDependencies": {
     "appdmg": "^0.4.5"
   },
   "devDependencies": {
+    "lunr": "^2.3.8",
+    "robotjs": "^0.6.0",
+    "electron-builder": "^22.5.1",
     "archiver": "^1.1.0",
     "electron": "^1.3.5",
     "electron-packager": "^8.0.0",
