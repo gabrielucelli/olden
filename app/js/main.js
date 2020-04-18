@@ -6,7 +6,7 @@ const Vue = require('vue/dist/vue');
 const Mousetrap = require('mousetrap')
 
 db.version(1).stores({
-    items: '++id, &text, favorite'
+    items: '++id, &text'
 });
 
 const vm = new Vue({
@@ -43,26 +43,13 @@ const vm = new Vue({
         loadClipboard(callback, setLastItem) {
             setLastItem = setLastItem || false;
 
-            // NOTE: favorites aren't used for now.
             db.items
-                .where('favorite').equals(1)
-                .reverse()
-                .offset(9 * this.currentPage)
-                .limit(9)
-                .sortBy('id')
-                .then((favorites) => {
-                    this.favorites = favorites;
-                });
-
-            db.items
-                .where('favorite').equals(0)
                 .reverse()
                 .offset(9 * this.currentPage)
                 .limit(9)
                 .sortBy('id')
                 .then((items) => {
-                    // NOTE: until favorites are fully implemented we can store only
-                    // text values in the clipboard.
+
                     this.clipboardContent = items.map((item) => item.text);
 
                     // Store the last value from the clipboard to check if it has changed.
@@ -158,6 +145,7 @@ const vm = new Vue({
          * @param {String} needle
          */
         searchClipboard(needle) {
+
             db.items.where('text').startsWithIgnoreCase(needle).count((count) => {
                 vm.searchItemCount = count;
             });
@@ -170,9 +158,9 @@ const vm = new Vue({
                 .sortBy('id')
                 .then((items) => {
                     vm.searchResults = [];
-
                     items.forEach((item) => vm.searchResults.push(item.text));
                 });
+
         },
 
         /**
@@ -233,7 +221,7 @@ const vm = new Vue({
      */
     mounted() {
 
-        db.items.where('favorite').equals(0).count((count) => {
+        db.items.count((count) => {
             this.clipboardItemCount = count;
         });
 
@@ -245,8 +233,6 @@ const vm = new Vue({
             // try to integrate it in the app.
             setInterval(() => {
                 const clipboardText = clipboard.readText();
-
-                console.log(clipboardText);
 
                 if (clipboardText.length > 0 && clipboardText != this.lastClipboardItem) {
                     // Delete the item if it's already in the clipboard to avoid extra checks.
@@ -265,12 +251,12 @@ const vm = new Vue({
                         })
                         .then(() => {
                             this.clipboardContent.unshift(clipboardText);
-                            db.items.add({ text: clipboardText, favorite: 0 });
+                            db.items.add({ text: clipboardText });
                             this.lastClipboardItem = clipboardText;
                             this.clipboardItemCount++;
                         });
                 }
-            }, 500);
+            }, 300);
         }, true);
 
         ipcRenderer.on('clearClipboardHistory', () => {
