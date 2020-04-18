@@ -54,6 +54,7 @@ const vm = new Vue({
     watch: {
         query: _.debounce(
             (value) => {
+                vm.selectionIndex = -1;
                 if (value.length > 0) {
                     vm.searchClipboard(value);
                 } else {

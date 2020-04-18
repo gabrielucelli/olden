@@ -26,15 +26,20 @@ app.on('ready', () => {
   mainWindow = new BrowserWindow({
     frame: false,
     height: 396,
-    width: 300,
+    width: 400,
     backgroundColor: '#2B2F3B',
     resizable: false,
     center: true,
     skipTaskbar: true,
     show: false,
     title: 'Olden',
+    alwaysOnTop: true,
     icon: path.join(__dirname, 'img', 'app_icon.png')
   });
+
+  mainWindow.on('blur', () => {
+    mainWindow.hide()
+  })
 
   // The trigger used to show/hide the app window.
   // TODO: allow user to set a custom shortcut.

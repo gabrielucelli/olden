@@ -17,7 +17,7 @@ main {
 body {
   background-color: #2B2F3B;
   color: #BDBFC2;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Roboto, sans-serif;
   font-size: .8rem;
 }
 
@@ -51,11 +51,19 @@ main > div > div {
   text-overflow: ellipsis;
   padding: 10px;
   height: 36px;
-  border-top: 1px dotted #1C1F26;
+}
+
+main > div > div.item {
+  border-bottom: 1px dotted #1C1F26;
+}
+
+main > div > div.pagination {
+  background-color: #4c515d;
 }
 
 main > div > div.selected {
-  background-color: #668A6F;
+  color: #BDBFC2;
+  background-color: #2c62a2;
 }
 
 .pagination {
