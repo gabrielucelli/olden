@@ -13,7 +13,6 @@ const {
 
 const path = require('path');
 const fs = require('fs');
-const AutoLaunch = require('auto-launch');
 
 
 let mainWindow = null;
@@ -24,17 +23,11 @@ if (app.dock) {
   app.dock.hide();
 }
 
+app.setLoginItemSettings({
+  openAtLogin: true,
+})
 
 app.on('ready', () => {
-
-  let autoLaunch = new AutoLaunch({
-    name: 'Olden',
-    path: app.getPath('exe'),
-  });
-
-  autoLaunch.isEnabled().then((isEnabled) => {
-    if (!isEnabled) autoLaunch.enable();
-  });
 
   mainWindow = new BrowserWindow({
     frame: false,

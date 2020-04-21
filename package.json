@@ -1,6 +1,6 @@
 {
   "name": "olden",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "main": "./app/main.js",
   "scripts": {
     "start": "electron . --dev",
@@ -13,7 +13,6 @@
     "bootstrap": "npm i"
   },
   "dependencies": {
-    "auto-launch": "^5.0.5",
     "dexie": "^1.4.1",
     "lodash": "^4.17.15",
     "mousetrap": "^1.6.5",
