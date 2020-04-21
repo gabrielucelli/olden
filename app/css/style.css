@@ -17,8 +17,9 @@ main {
 body {
   background-color: #2B2F3B;
   color: #BDBFC2;
-  font-family: Roboto, sans-serif;
-  font-size: .8rem;
+  font-family: "Lato";
+  font-size: .85rem;
+  font-weight: 600;
 }
 
 /*

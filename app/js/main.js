@@ -28,6 +28,7 @@ const vm = new Vue({
             (value) => {
                 vm.selectionIndex = -1;
                 if (value.length > 0) {
+                    vm.query = value
                     vm.searchClipboard(value);
                 } else {
                     vm.searchResults = [];
@@ -82,7 +83,6 @@ const vm = new Vue({
          */
         openPage(pageIndex, callback) {
             this.currentPage = pageIndex;
-
             this.loadClipboard(callback);
         },
 
@@ -140,12 +140,11 @@ const vm = new Vue({
                     // at the very top of the list.
                     this.openPage(0, () => {
                         clipboard.writeText(clipboardItem);
-
+                        this.hideWindow();
                         this.selectionIndex = -1;
                         this.query = '';
                         this.currentSearchPage = 0;
-
-                        this.hideWindow();
+                        
                     });
                 });
         },
@@ -190,8 +189,8 @@ const vm = new Vue({
 
             find(needle)
                 .then((items) => {
-                    vm.searchItemCount = items.length;
                     vm.searchResults = items.map((item) => item.text);
+                    vm.searchItemCount = items.length;
                 }, (e) => {
                     console.log(e)
                 });
@@ -213,11 +212,17 @@ const vm = new Vue({
             Mousetrap.bind('right', () => {
                 if (this.query.length === 0) {
                     if ((Math.ceil(this.clipboardItemCount / 9)) > this.currentPage + 1) {
-                        this.openPage(this.currentPage + 1);
+                        this.openPage(this.currentPage + 1, () => {
+                            if(this.clipboardContent.length - 1 < this.selectionIndex) {
+                                this.selectionIndex = this.clipboardContent.length - 1
+                            }
+                        });
                     }
                 } else {
-                    this.currentSearchPage++;
-                    this.searchClipboard(this.query);
+                    if ((Math.ceil(this.searchItemCount / 9)) > this.currentSearchPage + 1) {
+                        this.currentSearchPage++;
+                        this.searchClipboard(this.query);
+                    }
                 }
             });
 

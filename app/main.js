@@ -41,7 +41,7 @@ app.on('ready', () => {
   });
 
   mainWindow.on('blur', () => {
-    mainWindow.hide()
+    //mainWindow.hide()
   })
 
   // The trigger used to show/hide the app window.
