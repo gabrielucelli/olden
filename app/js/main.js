@@ -1,41 +1,13 @@
 const _ = require('lodash');
 const { ipcRenderer, clipboard } = require('electron');
-const path = require('path');
 const Dexie = require('dexie');
 const db = new Dexie('mydb');
 const Vue = require('vue/dist/vue');
 const Mousetrap = require('mousetrap');
 
 db.version(1).stores({
-    items: '++id, &text, *textWords'
-});
-
-db.items.hook("creating", function (primKey, obj, trans) {
-    if (typeof obj.text == 'string') obj.textWords = getAllWords(obj.text);
-});
-
-db.items.hook("updating", function (mods, primKey, obj, trans) {
-    if (mods.hasOwnProperty("text")) {
-        // "message" property is being updated
-        if (typeof mods.text == 'string')
-            // "message" property was updated to another valid value. Re-index messageWords:
-            return { textWords: getAllWords(mods.text) };
-        else
-            // "message" property was deleted (typeof mods.message === 'undefined') or changed to an unknown type. Remove indexes:
-            return { textWords: [] };
-    }
-
-});
-
-function getAllWords(text) {
-    var allWordsIncludingDups = text.split(' ');
-    var wordSet = allWordsIncludingDups.reduce(function (prev, current) {
-        prev[current] = true;
-        return prev;
-    }, {});
-    return Object.keys(wordSet);
-}
-
+    items: '++id, &text'
+})
 
 const vm = new Vue({
     el: '#app',
@@ -185,8 +157,6 @@ const vm = new Vue({
          */
         searchClipboard(needle) {
 
-            console.time('someFunction')
-
             function slugify (str) {
                 var map = {
                     '-' : ' ',
@@ -220,7 +190,6 @@ const vm = new Vue({
 
             find(needle)
                 .then((items) => {
-                    console.timeEnd('someFunction')
                     vm.searchItemCount = items.length;
                     vm.searchResults = items.map((item) => item.text);
                 }, (e) => {

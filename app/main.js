@@ -7,13 +7,10 @@ const {
   BrowserWindow,
   globalShortcut,
   ipcMain,
-  clipboard,
-  dialog,
-  shell } = require('electron');
+  dialog } = require('electron');
 
 const path = require('path');
 const fs = require('fs');
-
 
 let mainWindow = null;
 let tray = null;
@@ -63,17 +60,6 @@ app.on('ready', () => {
       }
     } else {
       mainWindow.show();
-    }
-  });
-
-  globalShortcut.register('esc', () => {
-    if (mainWindow.isVisible()) {
-      if (app.hide) {
-        app.hide();
-      } else {
-        mainWindow.blur();
-        mainWindow.hide()
-      }
     }
   });
 
